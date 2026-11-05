@@ -1,4 +1,7 @@
 
+const sleep = (ms) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 exports.handler = async (event) => {
   const headers = {
     "Content-Type": "application/json"
@@ -15,7 +18,6 @@ exports.handler = async (event) => {
   }
 
   try {
-    // Get Gemini API key from Netlify environment variables
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
@@ -23,12 +25,11 @@ exports.handler = async (event) => {
         statusCode: 500,
         headers,
         body: JSON.stringify({
-          error: "Gemini API key is not configured in Netlify."
+          error: "Gemini API key is not configured."
         })
       };
     }
 
-    // Read incoming request
     let body;
 
     try {
@@ -38,7 +39,7 @@ exports.handler = async (event) => {
         statusCode: 400,
         headers,
         body: JSON.stringify({
-          error: "Invalid JSON request body."
+          error: "Invalid JSON request."
         })
       };
     }
@@ -54,87 +55,183 @@ exports.handler = async (event) => {
         statusCode: 400,
         headers,
         body: JSON.stringify({
-          error: "A valid prompt is required."
+          error: "A valid website prompt is required."
         })
       };
     }
 
-    // Call Gemini 3.8 Flash
-    const response = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent",
-      {
-        method: "POST",
+    const endpoint =
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
 
-        headers: {
-          "Content-Type": "application/json",
-          "x-goog-api-key": apiKey
-        },
+    const startTime = Date.now();
+    const maxDuration = 27000;
 
-        body: JSON.stringify({
-          contents: [
-            {
-              role: "user",
-              parts: [
-                {
-                  text:
-                    "Create a complete, responsive, professional single-page website using HTML, CSS and JavaScript. " +
-                    "Return only the complete HTML document. " +
-                    "Include all CSS and JavaScript inside the HTML. " +
-                    "Make the design premium, modern, mobile-friendly and fully functional. " +
-                    "User website requirements: " +
-                    prompt
-                }
-              ]
-            }
-          ]
-        })
+    let lastError = "Gemini API request failed.";
+
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const remaining = maxDuration - (Date.now() - startTime);
+
+      if (remaining < 1500) {
+        break;
       }
-    );
 
-    // Read Gemini response safely
-    const responseText = await response.text();
+      const controller = new AbortController();
 
-    let data;
-
-    try {
-      data = JSON.parse(responseText);
-    } catch {
-      throw new Error(
-        "Gemini returned an invalid response. Please try again."
+      const timeout = setTimeout(
+        () => controller.abort(),
+        remaining - 500
       );
-    }
 
-    // Handle Gemini API errors
-    if (!response.ok) {
-      return {
-        statusCode: response.status,
-        headers,
-        body: JSON.stringify({
-          error:
+      let response;
+
+      try {
+        response = await fetch(endpoint, {
+          method: "POST",
+          signal: controller.signal,
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": apiKey
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  {
+                    text:
+                      "Create a complete, professional, responsive " +
+                      "single-page website using HTML, CSS and JavaScript. " +
+                      "Return only the complete HTML document. " +
+                      "Include all CSS and JavaScript inside the HTML. " +
+                      "Make it premium, modern, mobile-friendly and functional. " +
+                      "Website requirements: " +
+                      prompt
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              temperature: 0.7,
+              maxOutputTokens: 8192
+            }
+          })
+        });
+
+        const responseText = await response.text();
+
+        let data;
+
+        try {
+          data = JSON.parse(responseText);
+        } catch {
+          throw new Error(
+            "Gemini returned an invalid response."
+          );
+        }
+
+        if (!response.ok) {
+          lastError =
             data.error?.message ||
-            "Gemini API request failed."
-        })
-      };
+            "Gemini API request failed.";
+
+          if (
+            response.status === 503 &&
+            attempt === 0 &&
+            Date.now() - startTime < maxDuration - 2000
+          ) {
+            console.log(
+              "Gemini is busy. Retrying once..."
+            );
+
+            await sleep(700);
+            continue;
+          }
+
+          return {
+            statusCode: response.status,
+            headers,
+            body: JSON.stringify({
+              error:
+                response.status === 503
+                  ? "Gemini is experiencing high demand. Please try again shortly."
+                  : response.status === 429
+                  ? "Gemini API rate limit reached. Please try again later."
+                  : lastError
+            })
+          };
+        }
+
+        const candidate = data.candidates?.[0];
+
+        if (candidate?.finishReason === "MAX_TOKENS") {
+          return {
+            statusCode: 502,
+            headers,
+            body: JSON.stringify({
+              error: "Website response was too long. Try a shorter prompt."
+            })
+          };
+        }
+
+        const code = candidate?.content?.parts
+          ?.map((part) => part.text || "")
+          .join("")
+          .trim();
+
+        if (!code) {
+          throw new Error(
+            "Gemini returned an empty website response."
+          );
+        }
+
+        const cleanCode = code
+          .replace(/^```(?:html)?\s*/i, "")
+          .replace(/\s*```$/, "")
+          .trim();
+
+        console.log("Website generated successfully.");
+
+        return {
+          statusCode: 200,
+          headers,
+          body: JSON.stringify({
+            code: cleanCode
+          })
+        };
+
+      } catch (error) {
+        lastError = error.message || "Unknown API error.";
+
+        console.error("Gemini request error:", lastError);
+
+        if (error.name === "AbortError") {
+          return {
+            statusCode: 504,
+            headers,
+            body: JSON.stringify({
+              error: "Gemini took too long to respond. Please try again."
+            })
+          };
+        }
+
+        return {
+          statusCode: 502,
+          headers,
+          body: JSON.stringify({
+            error: "Could not connect to Gemini. Please try again."
+          })
+        };
+
+      } finally {
+        clearTimeout(timeout);
+      }
     }
 
-    // Extract generated HTML
-    const code = data.candidates?.[0]?.content?.parts
-      ?.map((part) => part.text || "")
-      .join("")
-      .trim();
-
-    if (!code) {
-      throw new Error(
-        "Gemini returned an empty website response."
-      );
-    }
-
-    // Return generated website to frontend
     return {
-      statusCode: 200,
+      statusCode: 503,
       headers,
       body: JSON.stringify({
-        code: code
+        error: "Gemini is busy. Please try again shortly."
       })
     };
 
@@ -145,9 +242,7 @@ exports.handler = async (event) => {
       statusCode: 500,
       headers,
       body: JSON.stringify({
-        error:
-          error.message ||
-          "Something went wrong while generating the website."
+        error: "Something went wrong while generating the website."
       })
     };
   }
