@@ -1,6 +1,5 @@
 
-const sleep = (ms) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 exports.handler = async (event) => {
   const headers = {
@@ -11,9 +10,7 @@ exports.handler = async (event) => {
     return {
       statusCode: 405,
       headers,
-      body: JSON.stringify({
-        error: "Method not allowed. Please use POST."
-      })
+      body: JSON.stringify({ error: "Method not allowed." })
     };
   }
 
@@ -24,9 +21,7 @@ exports.handler = async (event) => {
       return {
         statusCode: 500,
         headers,
-        body: JSON.stringify({
-          error: "Gemini API key is not configured."
-        })
+        body: JSON.stringify({ error: "Gemini API key is not configured." })
       };
     }
 
@@ -38,25 +33,17 @@ exports.handler = async (event) => {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({
-          error: "Invalid JSON request."
-        })
+        body: JSON.stringify({ error: "Invalid JSON request." })
       };
     }
 
     const prompt = body.prompt;
 
-    if (
-      !prompt ||
-      typeof prompt !== "string" ||
-      !prompt.trim()
-    ) {
+    if (typeof prompt !== "string" || !prompt.trim()) {
       return {
         statusCode: 400,
         headers,
-        body: JSON.stringify({
-          error: "A valid website prompt is required."
-        })
+        body: JSON.stringify({ error: "A valid prompt is required." })
       };
     }
 
@@ -64,22 +51,17 @@ exports.handler = async (event) => {
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
 
     const startTime = Date.now();
-    const maxDuration = 27000;
-
-    let lastError = "Gemini API request failed.";
+    const maxDuration = 25000;
 
     for (let attempt = 0; attempt < 2; attempt++) {
       const remaining = maxDuration - (Date.now() - startTime);
 
-      if (remaining < 1500) {
-        break;
-      }
+      if (remaining < 3000) break;
 
       const controller = new AbortController();
-
       const timeout = setTimeout(
         () => controller.abort(),
-        remaining - 500
+        remaining - 1000
       );
 
       let response;
@@ -93,23 +75,17 @@ exports.handler = async (event) => {
             "x-goog-api-key": apiKey
           },
           body: JSON.stringify({
-            contents: [
-              {
-                role: "user",
-                parts: [
-                  {
-                    text:
-                      "Create a complete, professional, responsive " +
-                      "single-page website using HTML, CSS and JavaScript. " +
-                      "Return only the complete HTML document. " +
-                      "Include all CSS and JavaScript inside the HTML. " +
-                      "Make it premium, modern, mobile-friendly and functional. " +
-                      "Website requirements: " +
-                      prompt
-                  }
-                ]
-              }
-            ],
+            contents: [{
+              role: "user",
+              parts: [{
+                text:
+                  "Create a complete, premium, responsive single-page website " +
+                  "using HTML, CSS and JavaScript. Return only a complete HTML document. " +
+                  "Include CSS and JavaScript inside the HTML. " +
+                  "Make it mobile-friendly and functional. Requirements: " +
+                  prompt
+              }]
+            }],
             generationConfig: {
               temperature: 0.7,
               maxOutputTokens: 8192
@@ -120,43 +96,42 @@ exports.handler = async (event) => {
         const responseText = await response.text();
 
         let data;
-
         try {
           data = JSON.parse(responseText);
         } catch {
-          throw new Error(
-            "Gemini returned an invalid response."
-          );
+          throw new Error("Gemini returned an invalid response.");
         }
 
         if (!response.ok) {
-          lastError =
-            data.error?.message ||
-            "Gemini API request failed.";
+          const message = data.error?.message || "Gemini API request failed.";
 
           if (
             response.status === 503 &&
             attempt === 0 &&
-            Date.now() - startTime < maxDuration - 2000
+            Date.now() - startTime < maxDuration - 3000
           ) {
-            console.log(
-              "Gemini is busy. Retrying once..."
-            );
-
-            await sleep(700);
+            console.log("Gemini busy. Retrying once.");
+            await sleep(500);
             continue;
           }
 
+          const status =
+            response.status === 429 ? 429 :
+            response.status === 503 ? 503 :
+            response.status === 400 ? 400 :
+            response.status === 403 ? 403 :
+            502;
+
           return {
-            statusCode: response.status,
+            statusCode: status,
             headers,
             body: JSON.stringify({
               error:
                 response.status === 503
                   ? "Gemini is experiencing high demand. Please try again shortly."
                   : response.status === 429
-                  ? "Gemini API rate limit reached. Please try again later."
-                  : lastError
+                  ? "Gemini rate limit reached. Please try again later."
+                  : message
             })
           };
         }
@@ -174,14 +149,12 @@ exports.handler = async (event) => {
         }
 
         const code = candidate?.content?.parts
-          ?.map((part) => part.text || "")
+          ?.map(part => part.text || "")
           .join("")
           .trim();
 
         if (!code) {
-          throw new Error(
-            "Gemini returned an empty website response."
-          );
+          throw new Error("Gemini returned an empty website response.");
         }
 
         const cleanCode = code
@@ -194,31 +167,19 @@ exports.handler = async (event) => {
         return {
           statusCode: 200,
           headers,
-          body: JSON.stringify({
-            code: cleanCode
-          })
+          body: JSON.stringify({ code: cleanCode })
         };
 
       } catch (error) {
-        lastError = error.message || "Unknown API error.";
-
-        console.error("Gemini request error:", lastError);
-
-        if (error.name === "AbortError") {
-          return {
-            statusCode: 504,
-            headers,
-            body: JSON.stringify({
-              error: "Gemini took too long to respond. Please try again."
-            })
-          };
-        }
+        console.error("Gemini request error:", error.message);
 
         return {
-          statusCode: 502,
+          statusCode: error.name === "AbortError" ? 504 : 502,
           headers,
           body: JSON.stringify({
-            error: "Could not connect to Gemini. Please try again."
+            error: error.name === "AbortError"
+              ? "Gemini took too long to respond. Please try again."
+              : "Could not connect to Gemini. Please try again."
           })
         };
 
