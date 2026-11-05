@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#30213b" />
+  <title>ZYVORA STUDIO — Your Website Workspace</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#" data-page="dashboard">
+        <span class="brand-mark">Z</span>
+        <span><b>ZYVORA</b><small>STUDIO</small></span>
+      </a>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav class="nav">
+        <button class="nav-link active" data-page="dashboard"><span>⌂</span> Dashboard</button>
+        <button class="nav-link" data-page="builder"><span>✦</span> AI Website Builder</button>
+        <button class="nav-link" data-page="library"><span>▤</span> Prompt Library <em>10</em></button>
+        <button class="nav-link" data-page="projects"><span>▣</span> My Projects</button>
+        <button class="nav-link" data-page="publish"><span>↗</span> Publish & Deliver</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <span class="help-icon">✧</span>
+          <b>Keep it simple.</b>
+          <p>Create, preview and deliver client websites from one place.</p>
+        </div>
+        <button class="nav-link" data-page="settings"><span>⚙</span> AI & Settings</button>
+        <div class="profile"><div class="avatar">Z</div><div><b>My Workspace</b><small>Personal account</small></div><span class="online-dot"></span></div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Open menu">☰</button>
+        <div class="breadcrumb">Workspace <span>/</span> <b id="crumb">Dashboard</b></div>
+        <div class="top-actions"><span class="status-dot"></span><span class="top-status">Personal workspace</span><button class="icon-btn" data-page="settings" title="Settings">⚙</button></div>
+      </header>
+
+      <section class="page active" id="page-dashboard">
+        <div class="welcome-row">
+          <div><div class="eyebrow">YOUR CREATIVE WORKSPACE</div><h1>Build something <i>remarkable.</i></h1><p class="muted">Your simple workspace for creating professional client websites.</p></div>
+          <div class="date-chip" id="todayLabel">YOUR STUDIO</div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-copy"><span class="hero-kicker">✦ YOUR AI-POWERED STUDIO</span><h2>From a simple prompt<br>to a polished website.</h2><p>Choose a business type, add the client details and let your creative workflow begin.</p><button class="btn btn-light" data-page="builder">Start building <span>→</span></button></div>
+          <div class="hero-art"><div class="art-window"><div class="art-dots"><i></i><i></i><i></i></div><div class="art-line wide"></div><div class="art-line"></div><div class="art-grid"><i></i><i></i><i></i></div><div class="art-pill"></div></div><div class="art-orb"></div><div class="art-spark">✦</div></div>
+        </div>
+        <div class="section-heading"><div><div class="eyebrow">QUICK ACCESS</div><h2>What would you like to do?</h2></div></div>
+        <div class="quick-grid">
+          <button class="quick-card" data-page="builder"><span class="quick-icon peach">✦</span><b>Generate a website</b><small>Start with a client brief</small><span class="card-arrow">↗</span></button>
+          <button class="quick-card" data-page="library"><span class="quick-icon lavender">▤</span><b>Browse prompts</b><small>10 professional templates</small><span class="card-arrow">↗</span></button>
+          <button class="quick-card" data-page="projects"><span class="quick-icon sage">▣</span><b>Open my projects</b><small>Continue saved work</small><span class="card-arrow">↗</span></button>
+          <button class="quick-card" data-page="publish"><span class="quick-icon gold">↗</span><b>Publish & deliver</b><small>Prepare client handover</small><span class="card-arrow">↗</span></button>
+        </div>
+        <div class="section-heading recent-heading"><div><div class="eyebrow">YOUR WORK</div><h2>Recent projects</h2></div><button class="text-button" data-page="projects">View all →</button></div>
+        <div class="project-list" id="dashboardProjects"><div class="empty-state"><span>✧</span><b>Your next great project starts here.</b><p>Generated and saved websites will appear here.</p><button class="btn btn-outline" data-page="builder">Create your first project</button></div></div>
+        <div class="notice"><span>✦</span><p><b>Beginner tip</b> — Start with the Prompt Library. It gives you a professional brief for each type of business.</p></div>
+      </section>
+
+      <section class="page" id="page-builder">
+        <div class="page-heading"><div class="eyebrow">CREATE A CLIENT WEBSITE</div><h1>AI Website <i>Builder</i></h1><p class="muted">Choose a category and enter the details you know. You can leave optional fields blank.</p></div>
+        <div class="builder-layout">
+          <div class="panel form-panel">
+            <div class="panel-title"><span class="step-number">01</span><div><h3>Client details</h3><p>Tell us a little about the business.</p></div></div>
+            <form id="clientForm">
+              <label>Business category <span class="required">*</span></label>
+              <select id="businessCategory" required></select>
+              <label>Business / brand name <span class="required">*</span></label><input id="businessName" required placeholder="e.g. The Olive Table" />
+              <div class="two-col"><div><label>Phone / WhatsApp</label><input id="phone" placeholder="+91 98765 43210" /></div><div><label>Email</label><input id="email" type="email" placeholder="hello@example.com" /></div></div>
+              <label>Business address</label><input id="address" placeholder="Area, city, state" />
+              <label>Services / products</label><textarea id="services" rows="3" placeholder="List the main services, products or menu items..."></textarea>
+              <div class="two-col"><div><label>Price range / menu prices</label><input id="prices" placeholder="e.g. ₹199–₹999" /></div><div><label>Opening hours</label><input id="hours" placeholder="e.g. 10 AM – 10 PM" /></div></div>
+              <label>Website style / special notes</label><textarea id="notes" rows="3" placeholder="e.g. elegant, family-friendly, online booking..."></textarea>
+              <label>Social links (optional)</label><input id="social" placeholder="Instagram, Facebook or Google Maps link" />
+              <div class="form-footnote">Only enter information supplied or approved by your client. Unknown details will be left as placeholders.</div>
+              <button class="btn btn-primary full" type="submit">Prepare my website prompt <span>→</span></button>
+            </form>
+          </div>
+          <div class="builder-side">
+            <div class="panel side-tip"><span class="tip-icon">✧</span><h3>How it works</h3><ol><li><b>Choose a category</b><small>Each business type has its own design direction.</small></li><li><b>Add client details</b><small>Fill in what you know. Optional fields can stay empty.</small></li><li><b>Generate with AI</b><small>Review the prompt, then generate a first website draft.</small></li></ol></div>
+            <div class="panel warm-note"><b>Good to know</b><p>AI generation requires your own Gemini API key. Add it once in AI & Settings. Keep it private.</p><button class="text-button" data-page="settings">Open AI settings →</button></div>
+          </div>
+        </div>
+        <div class="panel result-panel hidden" id="promptResult">
+          <div class="result-head"><div><div class="eyebrow">YOUR CUSTOM PROMPT</div><h3>Ready for your creative brief.</h3></div><div class="result-actions"><button class="btn btn-outline" id="copyPrompt">Copy prompt</button><button class="btn btn-primary" id="generateAI">✦ Generate website</button></div></div>
+          <textarea id="generatedPrompt" rows="12" spellcheck="false"></textarea>
+          <div class="ai-output hidden" id="aiOutput"><div class="output-head"><div><span class="status-dot"></span><b>Website draft generated</b></div><div><button class="btn btn-outline btn-small" id="previewOutput">Preview</button><button class="btn btn-outline btn-small" id="downloadOutput">Download HTML</button><button class="btn btn-primary btn-small" id="saveOutput">Save project</button></div></div><iframe id="previewFrame" title="Generated website preview" sandbox="allow-scripts allow-forms allow-popups"></iframe></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-library">
+        <div class="page-heading"><div class="eyebrow">YOUR REUSABLE STARTING POINTS</div><h1>Premium Prompt <i>Library</i></h1><p class="muted">Choose a business category. Each template creates a tailored, professional website brief.</p></div>
+        <div class="library-toolbar"><div class="search-wrap"><span>⌕</span><input id="promptSearch" placeholder="Search business categories..." /></div><span class="count-label">10 ready-made templates</span></div>
+        <div class="category-grid" id="categoryGrid"></div>
+      </section>
+
+      <section class="page" id="page-projects">
+        <div class="page-heading"><div class="eyebrow">YOUR CLIENT WORK</div><h1>My <i>Projects</i></h1><p class="muted">Your saved website drafts stay in this browser on this device.</p></div>
+        <div class="project-toolbar"><div class="search-wrap"><span>⌕</span><input id="projectSearch" placeholder="Search your projects..." /></div><button class="btn btn-primary" data-page="builder">+ New project</button></div>
+        <div class="project-list" id="allProjects"></div>
+      </section>
+
+      <section class="page" id="page-publish">
+        <div class="page-heading"><div class="eyebrow">FROM DRAFT TO CLIENT</div><h1>Publish & <i>Deliver</i></h1><p class="muted">A simple checklist to publish your work and hand it over professionally.</p></div>
+        <div class="publish-layout">
+          <div class="panel"><div class="panel-title"><span class="step-number">01</span><div><h3>Choose a saved project</h3><p>Select the website you want to deliver.</p></div></div><select id="publishProject"><option value="">Choose a project...</option></select><div id="publishPreview" class="publish-project-preview"><span>▣</span><p>Your selected project details will appear here.</p></div><button class="btn btn-primary full" id="publishNetlify">Publish to Netlify <span>↗</span></button><p class="tiny muted">Direct publishing requires Netlify credentials configured in your site's hosting environment. See the setup guide.</p></div>
+          <div class="panel"><div class="panel-title"><span class="step-number">02</span><div><h3>Client handover checklist</h3><p>Tick these off before delivery.</p></div></div><div class="checklist"><label><input type="checkbox"> Client approved the final design</label><label><input type="checkbox"> Contact details and links tested</label><label><input type="checkbox"> Mobile layout checked</label><label><input type="checkbox"> Domain and hosting ownership agreed</label><label><input type="checkbox"> Source-code ZIP delivered</label><label><input type="checkbox"> Login and access transferred securely</label></div><div class="handover-note"><b>Client ownership tip</b><p>For a clean handover, publish under the client's own Netlify account whenever possible. Never send your personal API keys or account passwords.</p></div></div>
+        </div>
+        <div class="panel delivery-panel"><h3>What to deliver to your client</h3><div class="delivery-items"><span>✓ Live website link</span><span>✓ Source-code ZIP</span><span>✓ Domain / hosting details</span><span>✓ Basic update instructions</span></div></div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="page-heading"><div class="eyebrow">YOUR PRIVATE WORKSPACE</div><h1>AI & <i>Settings</i></h1><p class="muted">Connect the tools that power your website workflow.</p></div>
+        <div class="settings-grid">
+          <div class="panel"><div class="setting-icon">✦</div><h3>Google Gemini AI</h3><p class="muted">Used to generate website code from your custom prompts.</p><label>Gemini API key</label><input id="geminiKey" type="password" placeholder="Paste your API key" autocomplete="off"><p class="tiny muted">The key is sent to your server function, not included in generated website code. Configure GEMINI_API_KEY in Netlify environment variables for deployed use.</p><a class="text-button" href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer">Get a Gemini API key ↗</a><button class="btn btn-primary full" id="saveKey">Save key for this browser</button><div class="inline-status" id="keyStatus"></div></div>
+          <div class="panel"><div class="setting-icon">↗</div><h3>Netlify publishing</h3><p class="muted">Deploy generated websites directly to a Netlify site.</p><div class="config-status"><span class="status-dot"></span><span>Requires server-side configuration</span></div><p class="tiny muted">Set NETLIFY_AUTH_TOKEN and NETLIFY_SITE_ID in Netlify environment variables. Never paste these into public frontend code.</p><a class="text-button" href="https://app.netlify.com/user/applications#personal-access-tokens" target="_blank" rel="noreferrer">Create Netlify access token ↗</a></div>
+          <div class="panel"><div class="setting-icon">▣</div><h3>Project storage</h3><p class="muted">This starter version saves project drafts in this browser using local storage.</p><div class="config-status"><span class="status-dot"></span><span>Local device storage</span></div><p class="tiny muted">Projects are not synced across devices yet. A database and secure login can be added in a later step.</p></div>
+          <div class="panel"><div class="setting-icon">⌘</div><h3>Source code & hosting</h3><p class="muted">Keep your workspace source code backed up and deploy this app with Netlify.</p><a class="text-button" href="https://github.com/" target="_blank" rel="noreferrer">Open GitHub ↗</a><a class="text-button" href="https://app.netlify.com/" target="_blank" rel="noreferrer">Open Netlify ↗</a></div>
+        </div>
+        <div class="notice"><span>!</span><p><b>Security note:</b> For a private tool, use your own accounts. Do not share API keys, access tokens, passwords or client confidential information.</p></div>
+      </section>
+      <footer class="footer"><span>ZYVORA STUDIO</span><span>Made for your next great client project.</span></footer>
+    </main>
+  </div>
+  <div class="toast" id="toast"></div>
+  <div class="modal-backdrop hidden" id="categoryModal"><div class="modal"><button class="modal-close" id="closeModal">×</button><div class="eyebrow">PROMPT TEMPLATE</div><h2 id="modalTitle">Restaurant</h2><p id="modalDescription" class="muted"></p><div class="modal-actions"><button class="btn btn-outline" id="copyTemplate">Copy template</button><button class="btn btn-primary" id="useTemplate">Use this category →</button></div></div></div>
+  <script src="/app.js"></script>
+</body>
+</html>
