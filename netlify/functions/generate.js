@@ -47,8 +47,8 @@ exports.handler = async (event) => {
       };
     }
 
-    const endpoint =
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
+    const endpoint = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent";
+
 
     const startTime = Date.now();
     const maxDuration = 25000;
